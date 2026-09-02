@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#16382d" />
+  <title>KassenApp</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="mobile-topbar">
+    <div class="mobile-brand">
+      <div class="logo-box">KA</div>
+      <strong id="mobileAppTitle">KassenApp</strong>
+    </div>
+    <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Menü öffnen">☰</button>
+  </div>
+
+  <aside class="app-sidebar" id="appSidebar">
+    <div class="sidebar-brand">
+      <div class="logo-box" id="logoBox">KA</div>
+      <div class="sidebar-brand-copy">
+        <div class="brand-title" id="appTitle">KassenApp</div>
+        <div class="brand-subtitle">Verkauf einfach erfassen</div>
+      </div>
+      <button id="closeMobileMenuBtn" class="sidebar-mobile-close" type="button" aria-label="Menü schließen">×</button>
+    </div>
+
+    <nav class="nav" aria-label="Hauptnavigation">
+      <button class="nav-btn active" data-view="cash" type="button">
+        <span class="nav-icon">▣</span><span>Kasse</span>
+      </button>
+      <button class="nav-btn" data-view="sales" type="button">
+        <span class="nav-icon">▥</span><span>Verkäufe</span>
+      </button>
+      <button class="nav-btn" data-view="settings" type="button">
+        <span class="nav-icon">⚙</span><span>Einstellungen</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <span>Lokale Kasse</span>
+      <strong>Bereit</strong>
+    </div>
+  </aside>
+  <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Menü schließen"></button>
+<main class="shell">
+    <section id="cashView" class="view active">
+      <div class="cash-grid">
+        <div class="panel products-panel">
+          <div class="panel-header">
+            <div>
+              <h1>Kasse</h1>
+              <p>Artikel antippen, Menge anpassen und Verkauf abschließen.</p>
+            </div>
+          </div>
+
+          <div class="category-block">
+            <div class="section-title-row">
+              <h2>Essen</h2>
+            </div>
+            <div id="foodGrid" class="product-grid"></div>
+          </div>
+
+          <div class="category-divider"></div>
+          <div class="category-block drinks-block">
+            <div class="section-title-row">
+              <h2>Getränke</h2>
+            </div>
+            <div id="drinkGrid" class="product-grid"></div>
+          </div>
+        </div>
+
+        <aside class="panel checkout-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Aktueller Verkauf</h2>
+              <p id="cartHint">Noch keine Artikel ausgewählt.</p>
+            </div>
+            <button id="clearCartBtn" class="text-btn danger-soft" type="button">Leeren</button>
+          </div>
+
+          <div id="cartList" class="cart-list"></div>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>Gesamt</span>
+              <strong id="grandTotal">0,00 €</strong>
+            </div>
+          </div>
+
+          <div class="payment-box">
+            <label for="givenInput">Gegeben</label>
+            <div class="money-input-wrap">
+              <input id="givenInput" class="money-input" inputmode="decimal" placeholder="0,00" />
+              <span>€</span>
+            </div>
+
+            <div class="quick-money">
+              <button type="button" data-money="10">10 €</button>
+              <button type="button" data-money="20">20 €</button>
+              <button type="button" data-money="50">50 €</button>
+              <button type="button" id="exactBtn">Passend</button>
+            </div>
+
+            <div class="change-card">
+              <span>Rückgeld</span>
+              <strong id="changeAmount">0,00 €</strong>
+            </div>
+          </div>
+
+          <button id="completeSaleBtn" class="primary-btn complete-btn" type="button">✓ Verkauf abschließen</button>
+          <div id="cashMessage" class="message" aria-live="polite"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="salesView" class="view">
+      <div class="sales-v4">
+        <div class="sales-v4-header">
+          <div>
+            <h1>Verkäufe</h1>
+            <p>Übersicht des Verkaufstags <span id="salesDayLabel" class="sales-day-label"></span></p>
+          </div>
+        </div>
+
+        <div class="sales-summary-grid">
+          <article class="day-summary-card">
+            <div class="day-summary-icon">▥</div>
+            <div>
+              <span>Verkäufe</span>
+              <strong id="statSalesCount">0</strong>
+              <small>abgeschlossen</small>
+            </div>
+          </article>
+          <article class="day-summary-card">
+            <div class="day-summary-icon">€</div>
+            <div>
+              <span>Umsatz</span>
+              <strong id="statRevenue">0,00 €</strong>
+              <small>abgeschlossen</small>
+            </div>
+          </article>
+          <article class="day-summary-card">
+            <div class="day-summary-icon">↗</div>
+            <div>
+              <span>Ø pro Verkauf</span>
+              <strong id="statAverage">0,00 €</strong>
+              <small>Durchschnitt</small>
+            </div>
+          </article>
+        </div>
+
+        <section class="panel top-products-panel">
+          <div class="compact-section-head">
+            <div>
+              <h2>Meistverkaufte Artikel</h2>
+              <p>Mengen aus allen abgeschlossenen Verkäufen.</p>
+            </div>
+          </div>
+          <div id="itemStats" class="top-product-grid"></div>
+        </section>
+
+        <section class="panel sales-list-panel">
+          <div class="compact-section-head sales-list-head">
+            <div>
+              <h2>Verkäufe</h2>
+              <p>Klicke auf einen Eintrag, um die Details rechts zu öffnen.</p>
+            </div>
+            <label class="compact-filter">
+              <span>Status</span>
+              <select id="statusFilter">
+                <option value="all">Alle</option>
+                <option value="completed">Abgeschlossen</option>
+                <option value="cancelled">Storniert</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="compact-sales-table-wrap">
+            <table id="salesTable" class="compact-sales-table">
+              <thead id="salesHead"></thead>
+              <tbody id="salesBody"></tbody>
+            </table>
+          </div>
+          <div id="salesEmpty" class="empty-state">Noch keine Verkäufe vorhanden.</div>
+
+          <div class="sales-table-footer">
+            <div class="pagination-left">
+              <label class="page-size-control">
+                <span>Einträge pro Seite</span>
+                <select id="pageSizeSelect">
+                  <option value="5">5</option>
+                  <option value="10" selected>10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <span id="paginationInfo" class="pagination-info">0–0 von 0</span>
+            </div>
+
+            <div class="pagination-controls">
+              <button id="prevPageBtn" class="secondary-btn pagination-btn" type="button">← Zurück</button>
+              <span id="pageIndicator">Seite 1 / 1</span>
+              <button id="nextPageBtn" class="secondary-btn pagination-btn" type="button">Weiter →</button>
+            </div>
+          </div>
+
+          <div class="sales-export-row">
+            <button id="copySalesBtn" class="secondary-btn" type="button">⧉ Kopieren</button>
+            <button id="exportCsvBtn" class="primary-btn" type="button">↓ CSV exportieren</button>
+          </div>
+        </section>
+      </div>
+
+      <aside id="saleDetailDrawer" class="sale-drawer" aria-hidden="true">
+        <div class="sale-drawer-head">
+          <div>
+            <h2 id="saleDetailTitle">Verkaufsdetails</h2>
+            <p id="saleDetailMeta"></p>
+          </div>
+          <button id="closeSaleDetailBtn" class="drawer-close" type="button" aria-label="Schließen">×</button>
+        </div>
+        <div id="saleDetailContent" class="sale-drawer-content"></div>
+      </aside>
+      <button id="saleDrawerBackdrop" class="sale-drawer-backdrop" type="button" aria-label="Details schließen"></button>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="panel">
+        <div class="settings-header">
+          <div>
+            <h1>Einstellungen</h1>
+            <p>Artikel, Preise, Reihenfolge und App-Bezeichnung verwalten.</p>
+          </div>
+          <button id="addProductBtn" class="primary-btn" type="button">+ Artikel hinzufügen</button>
+        </div>
+
+        <div class="settings-meta">
+          <label>App-Name
+            <input id="appNameInput" type="text" maxlength="40" />
+          </label>
+          <div class="note">
+            Logo-Platz ist vorbereitet. Später können wir dein echtes Logo als Bilddatei einbauen.
+          </div>
+        </div>
+
+        <div class="settings-content-indent">
+          <p class="settings-drag-hint">Artikel per Drag&amp;Drop verschieben oder die Pfeile benutzen.</p>
+        </div>
+        <div id="settingsList" class="settings-list"></div>
+
+        <div class="backup-box">
+          <div>
+            <h3>Daten sichern / wiederherstellen</h3>
+            <p>Damit kannst du deine Einstellungen und Verkäufe auf einen anderen PC übertragen.</p>
+          </div>
+          <div class="header-actions">
+            <button id="backupBtn" class="secondary-btn" type="button">Sicherung herunterladen</button>
+            <label class="secondary-btn file-label">
+              Sicherung einlesen
+              <input id="restoreInput" type="file" accept="application/json,.json" hidden />
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="productDialog" class="modal">
+    <form id="productForm" class="modal-card" novalidate>
+      <div class="modal-header">
+        <div>
+          <h2 id="dialogTitle">Artikel bearbeiten</h2>
+          <p>Änderungen werden direkt in der Kasse übernommen.</p>
+        </div>
+        <button id="closeProductDialogBtn" class="icon-btn" type="button" aria-label="Schließen">×</button>
+      </div>
+
+      <input id="productIdInput" type="hidden" />
+
+      <label>Artikelname
+        <input id="productNameInput" type="text" maxlength="50" required />
+      </label>
+
+      <label>Kategorie
+        <select id="productCategoryInput">
+          <option value="food">Essen</option>
+          <option value="drink">Getränk</option>
+        </select>
+      </label>
+
+      <label>Preis (€)
+        <input id="productPriceInput" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" required />
+      </label>
+
+      <div class="field-group">
+        <span class="field-label">Farbe der Artikelkachel</span>
+        <div class="color-field">
+          <input id="productColorInput" type="color" value="#f6d49a" aria-label="Artikelfarbe auswählen" />
+          <span id="productColorValue">#f6d49a</span>
+        </div>
+      </div>
+
+      <label>Symbol (optional)
+        <input id="productIconInput" type="text" maxlength="4" placeholder="z. B. 🌭" />
+      </label>
+
+      <div class="image-upload-block">
+        <div class="image-upload-head">
+          <div>
+            <strong>Artikelbild (optional)</strong>
+            <small>Wird automatisch verkleinert, damit die App schnell bleibt.</small>
+          </div>
+          <button id="removeProductImageBtn" class="text-btn danger-soft" type="button">Bild entfernen</button>
+        </div>
+        <label class="image-drop">
+          <input id="productImageInput" type="file" accept="image/*" hidden />
+          <span id="imageDropText">Bild auswählen</span>
+          <img id="productImagePreview" alt="Vorschau" hidden />
+        </label>
+      </div>
+
+      <label class="modal-toggle-row">
+        <div>
+          <strong>Artikel aktiv</strong>
+          <small>Inaktive Artikel werden auf der Kassenseite ausgeblendet.</small>
+        </div>
+        <span class="modal-toggle-wrap">
+          <input id="productActiveInput" type="checkbox" checked />
+          <span class="toggle"></span>
+        </span>
+      </label>
+
+      <div id="productFormMessage" class="form-message" hidden></div>
+
+      <div class="modal-actions">
+        <button class="secondary-btn" value="cancel" type="button" id="cancelProductBtn">Abbrechen</button>
+        <button class="primary-btn" type="button" id="saveProductBtn">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+<script src="app.js"></script>
+</body>
+</html>
