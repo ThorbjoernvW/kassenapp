@@ -2407,3 +2407,71 @@ body { min-width: 0; }
 
   body.menu-open { overflow: auto; }
 }
+
+/* =========================================================
+   KassenApp V0.12
+   Mobile Settings-Layout + Touch-Zustand Tastenfeld
+   ========================================================= */
+
+/* Touch-Geräte behalten :hover nach einem Tap teilweise aktiv.
+   Auf Handy/Tablet sollen normale Zahlentasten deshalb sofort wieder weiß sein. */
+.cash-keypad button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cash-keypad button:hover {
+    background: #fff;
+  }
+
+  .cash-keypad .keypad-exact:hover {
+    background: var(--green-100);
+  }
+}
+
+/* Einstellungs-Karten auf dem Handy vollständig innerhalb der Karte halten. */
+@media (max-width: 760px) {
+  .settings-row {
+    grid-template-columns: 22px minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .settings-right {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-content: initial;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  .settings-right .order-controls {
+    justify-self: start;
+  }
+
+  .settings-right .toggle-wrap {
+    justify-self: end;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .settings-right .toggle-text {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .settings-action-group {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .settings-action-group button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}

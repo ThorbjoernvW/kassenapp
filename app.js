@@ -954,7 +954,10 @@ document.getElementById("exactBtn").addEventListener("click", () => {
   updateChange();
 });
 document.querySelectorAll("[data-keypad]").forEach(btn =>
-  btn.addEventListener("click", () => handleKeypadPress(btn.dataset.keypad))
+  btn.addEventListener("click", () => {
+    handleKeypadPress(btn.dataset.keypad);
+    btn.blur();
+  })
 );
 document.getElementById("keypadBackspaceBtn").addEventListener("click", () => {
   keypadSequence = keypadSequence.slice(0, -1);

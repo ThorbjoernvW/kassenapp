@@ -24,3 +24,7 @@ Neu in V0.10:
 - Auswertung über Verkaufszeiten / größter Ansturm
 - Aufteilung Essen / Getränke
 - Historische Artikelversionierung
+
+## V0.12
+- Mobile Einstellungen: Aktiv/Inaktiv-Schalter bleibt vollständig innerhalb der Artikelkarte.
+- Mobile Tastenfeldeingabe: Zahlentasten bleiben nach einem Tap nicht mehr durch einen Touch-Hover-Zustand grün.
