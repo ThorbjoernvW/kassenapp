@@ -978,16 +978,21 @@ document.getElementById("exactBtn").addEventListener("click", (event) => {
 document.querySelectorAll("[data-keypad]").forEach(btn =>
   btn.addEventListener("click", () => {
     handleKeypadPress(btn.dataset.keypad);
+    haptic(14);
     btn.blur();
   })
 );
-document.getElementById("keypadBackspaceBtn").addEventListener("click", () => {
+document.getElementById("keypadBackspaceBtn").addEventListener("click", (event) => {
   keypadSequence = keypadSequence.slice(0, -1);
   syncKeypadInput();
+  haptic(14);
+  event.currentTarget.blur();
 });
-document.getElementById("keypadExactBtn").addEventListener("click", () => {
+document.getElementById("keypadExactBtn").addEventListener("click", (event) => {
   keypadSequence = amountToKeypadSequence(cartTotal());
   syncKeypadInput();
+  haptic(18);
+  event.currentTarget.blur();
 });
 document.getElementById("clearCartBtn").addEventListener("click", () => clearCart(true));
 document.getElementById("completeSaleBtn").addEventListener("click", completeSale);
