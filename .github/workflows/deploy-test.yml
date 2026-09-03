@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout develop
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Clone test repository
         run: |
