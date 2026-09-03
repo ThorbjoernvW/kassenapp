@@ -25,6 +25,21 @@ Neu in V0.10:
 - Aufteilung Essen / Getränke
 - Historische Artikelversionierung
 
-## V0.12
+## V0.13
 - Mobile Einstellungen: Aktiv/Inaktiv-Schalter bleibt vollständig innerhalb der Artikelkarte.
 - Mobile Tastenfeldeingabe: Zahlentasten bleiben nach einem Tap nicht mehr durch einen Touch-Hover-Zustand grün.
+
+
+## V0.13 – Offline-Betrieb
+- Service Worker speichert die App-Oberfläche lokal im Browser.
+- Nach dem ersten erfolgreichen Laden über GitHub Pages kann die KassenApp auch ohne Internet geöffnet und benutzt werden.
+- Verkäufe, Artikel und Einstellungen bleiben weiterhin lokal im Browser gespeichert.
+- Bei einer neuen veröffentlichten Version wird der App-Cache automatisch erneuert.
+
+### Offline testen
+1. V0.13 auf GitHub Pages veröffentlichen.
+2. Die Seite auf dem Handy bei bestehender Internetverbindung einmal vollständig öffnen.
+3. Danach Flugmodus einschalten.
+4. Seite neu öffnen bzw. neu laden. Die Kasse sollte weiterhin funktionieren.
+
+Hinweis: Beim allerersten Aufruf ist Internet nötig, damit die App-Dateien lokal gespeichert werden können.

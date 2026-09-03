@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#16382d" />
   <title>KassenApp</title>
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -370,5 +371,14 @@
     </form>
   </dialog>
 <script src="app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js").catch(error => {
+        console.warn("Offline-Modus konnte nicht aktiviert werden:", error);
+      });
+    });
+  }
+</script>
 </body>
 </html>

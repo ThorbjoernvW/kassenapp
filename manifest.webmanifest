@@ -1,0 +1,11 @@
+{
+  "name": "KassenApp",
+  "short_name": "KassenApp",
+  "description": "Einfache KassenApp für Veranstaltungen",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f4ec",
+  "theme_color": "#16382d",
+  "icons": []
+}
