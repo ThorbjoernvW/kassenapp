@@ -11,13 +11,15 @@ const defaultState = {
     { id: crypto.randomUUID(), name: "Getränk 2", category: "drink", price: 2.00, icon: "🧃", active: true, order: 5, color: "#9fcbb3" },
     { id: crypto.randomUUID(), name: "Getränk 3", category: "drink", price: 3.00, icon: "☕", active: true, order: 6, color: "#b7c6e6" }
   ],
-  sales: []
+  sales: [],
+  paymentMode: "quick"
 };
 
 let state = loadState();
 let cart = new Map();
 let salesPage = 1;
 let salesPageSize = 10;
+let keypadSequence = "";
 
 
 function loadState() {
@@ -32,6 +34,7 @@ function loadState() {
       imageData: p.imageData || "",
       color: p.color || defaultColors[i % defaultColors.length]
     }));
+    parsed.paymentMode = parsed.paymentMode === "keypad" ? "keypad" : "quick";
     return parsed;
   } catch {
     return structuredClone(defaultState);
@@ -177,6 +180,74 @@ function renderCart() {
   updateChange();
 }
 
+
+function amountToKeypadSequence(value) {
+  const cents = Math.max(0, Math.round(Number(value || 0) * 100));
+  return cents ? String(cents) : "";
+}
+
+function keypadSequenceValue() {
+  if (!keypadSequence) return 0;
+  if (keypadSequence.includes(",")) {
+    const [eurosRaw, centsRaw = ""] = keypadSequence.split(",");
+    const euros = Number(eurosRaw || "0") || 0;
+    const cents = Number((centsRaw + "00").slice(0, 2)) || 0;
+    return euros + cents / 100;
+  }
+  return (Number(keypadSequence) || 0) / 100;
+}
+
+function syncKeypadInput() {
+  const input = document.getElementById("givenInput");
+  const value = keypadSequenceValue();
+  input.value = value ? value.toFixed(2).replace(".", ",") : "";
+  updateChange();
+}
+
+function handleKeypadPress(key) {
+  if (key === ",") {
+    if (!keypadSequence.includes(",")) {
+      keypadSequence = (keypadSequence || "0") + ",";
+    }
+  } else if (key === "00") {
+    if (keypadSequence.includes(",")) {
+      const [euros, cents = ""] = keypadSequence.split(",");
+      if (cents.length < 2) keypadSequence = euros + "," + (cents + "00").slice(0, 2);
+    } else if (keypadSequence.length < 9) {
+      keypadSequence = (keypadSequence + "00").slice(0, 9);
+    }
+  } else if (/^\d$/.test(key)) {
+    if (keypadSequence.includes(",")) {
+      const [euros, cents = ""] = keypadSequence.split(",");
+      if (cents.length < 2) keypadSequence = euros + "," + cents + key;
+    } else if (keypadSequence.length < 9) {
+      keypadSequence = (keypadSequence + key).replace(/^0+(?=\d)/, "").slice(0, 9);
+    }
+  }
+  syncKeypadInput();
+}
+
+function setPaymentMode(mode, persist = true) {
+  const nextMode = mode === "keypad" ? "keypad" : "quick";
+  state.paymentMode = nextMode;
+  document.querySelectorAll("[data-payment-mode]").forEach(btn => {
+    const active = btn.dataset.paymentMode === nextMode;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", String(active));
+  });
+  document.getElementById("quickPaymentMode").hidden = nextMode !== "quick";
+  document.getElementById("keypadPaymentMode").hidden = nextMode !== "keypad";
+
+  const input = document.getElementById("givenInput");
+  input.readOnly = nextMode === "keypad";
+  input.inputMode = nextMode === "keypad" ? "none" : "decimal";
+  if (nextMode === "keypad") {
+    keypadSequence = amountToKeypadSequence(parseMoney(input.value));
+    syncKeypadInput();
+  }
+  if (persist) saveState();
+}
+
 function updateChange() {
   const total = cartTotal();
   const given = parseMoney(document.getElementById("givenInput").value);
@@ -187,6 +258,7 @@ function updateChange() {
 function clearCart(showMessage = false) {
   cart.clear();
   document.getElementById("givenInput").value = "";
+  keypadSequence = "";
   renderCart();
   if (showMessage) setCashMessage("Aktueller Verkauf wurde geleert.");
 }
@@ -807,6 +879,7 @@ function restoreData(file) {
       saveState();
       cart.clear();
       renderAll();
+setPaymentMode(state.paymentMode || "quick", false);
       alert("Sicherung wurde erfolgreich eingelesen.");
     } catch {
       alert("Die Datei konnte nicht als gültige KassenApp-Sicherung gelesen werden.");
@@ -867,6 +940,9 @@ document.querySelectorAll(".app-sidebar .nav-btn").forEach(btn => btn.addEventLi
 
 
 document.getElementById("givenInput").addEventListener("input", updateChange);
+document.querySelectorAll("[data-payment-mode]").forEach(btn =>
+  btn.addEventListener("click", () => setPaymentMode(btn.dataset.paymentMode))
+);
 document.querySelectorAll("[data-money]").forEach(btn =>
   btn.addEventListener("click", () => {
     document.getElementById("givenInput").value = btn.dataset.money;
@@ -876,6 +952,17 @@ document.querySelectorAll("[data-money]").forEach(btn =>
 document.getElementById("exactBtn").addEventListener("click", () => {
   document.getElementById("givenInput").value = cartTotal().toFixed(2).replace(".", ",");
   updateChange();
+});
+document.querySelectorAll("[data-keypad]").forEach(btn =>
+  btn.addEventListener("click", () => handleKeypadPress(btn.dataset.keypad))
+);
+document.getElementById("keypadBackspaceBtn").addEventListener("click", () => {
+  keypadSequence = keypadSequence.slice(0, -1);
+  syncKeypadInput();
+});
+document.getElementById("keypadExactBtn").addEventListener("click", () => {
+  keypadSequence = amountToKeypadSequence(cartTotal());
+  syncKeypadInput();
 });
 document.getElementById("clearCartBtn").addEventListener("click", () => clearCart(true));
 document.getElementById("completeSaleBtn").addEventListener("click", completeSale);

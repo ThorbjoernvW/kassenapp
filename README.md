@@ -1,3 +1,11 @@
+# KassenApp V0.10
+
+Neu in V0.10:
+- Zwei Modi für die Eingabe des gegebenen Geldes: Schnellwahl und Tastenfeld.
+- Tastenfeld mit 0–9, Komma, 00, Passend und Löschtaste.
+- Schnelle Cent-Eingabe: 2000 entspricht 20,00 €.
+- Der zuletzt verwendete Eingabemodus wird lokal gespeichert.
+
 # KassenApp V0.9
 
 ## Fehlerbehebung

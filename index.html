@@ -90,17 +90,46 @@
           </div>
 
           <div class="payment-box">
-            <label for="givenInput">Gegeben</label>
+            <div class="payment-heading">
+              <label for="givenInput">Gegeben</label>
+              <div class="payment-mode-switch" role="group" aria-label="Eingabemodus für gegebenes Geld">
+                <button type="button" class="payment-mode-btn active" data-payment-mode="quick" aria-pressed="true">Schnellwahl</button>
+                <button type="button" class="payment-mode-btn" data-payment-mode="keypad" aria-pressed="false">Tastenfeld</button>
+              </div>
+            </div>
+
             <div class="money-input-wrap">
-              <input id="givenInput" class="money-input" inputmode="decimal" placeholder="0,00" />
+              <input id="givenInput" class="money-input" inputmode="decimal" placeholder="0,00" aria-label="Gegebener Betrag" />
               <span>€</span>
             </div>
 
-            <div class="quick-money">
-              <button type="button" data-money="10">10 €</button>
-              <button type="button" data-money="20">20 €</button>
-              <button type="button" data-money="50">50 €</button>
-              <button type="button" id="exactBtn">Passend</button>
+            <div id="quickPaymentMode" class="payment-mode-panel">
+              <div class="quick-money">
+                <button type="button" data-money="10">10 €</button>
+                <button type="button" data-money="20">20 €</button>
+                <button type="button" data-money="50">50 €</button>
+                <button type="button" id="exactBtn">Passend</button>
+              </div>
+            </div>
+
+            <div id="keypadPaymentMode" class="payment-mode-panel" hidden>
+              <div class="cash-keypad" aria-label="Tastenfeld für gegebenes Geld">
+                <button type="button" data-keypad="7">7</button>
+                <button type="button" data-keypad="8">8</button>
+                <button type="button" data-keypad="9">9</button>
+                <button type="button" data-keypad="4">4</button>
+                <button type="button" data-keypad="5">5</button>
+                <button type="button" data-keypad="6">6</button>
+                <button type="button" data-keypad="1">1</button>
+                <button type="button" data-keypad="2">2</button>
+                <button type="button" data-keypad="3">3</button>
+                <button type="button" data-keypad=",">,</button>
+                <button type="button" data-keypad="0">0</button>
+                <button type="button" data-keypad="00">00</button>
+                <button type="button" class="keypad-exact" id="keypadExactBtn">Passend</button>
+                <button type="button" class="keypad-backspace" id="keypadBackspaceBtn" aria-label="Letzte Eingabe löschen">⌫</button>
+              </div>
+              <p class="keypad-hint">Schnelleingabe: 2000 = 20,00 €</p>
             </div>
 
             <div class="change-card">
