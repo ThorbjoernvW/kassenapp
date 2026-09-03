@@ -1,45 +1,33 @@
-# KassenApp V0.11
+# KassenApp V0.14
 
-Neu in V0.11:
-- Mobile Burger-Navigation öffnet jetzt als kompaktes Dropdown oben rechts.
-- Keine vollflächige Seitenleiste mehr auf dem Handy.
+## Neu in V0.14
 
-# KassenApp V0.10
+- **Haptische Rückmeldung** auf unterstützten Geräten:
+  - kurzer Impuls beim Hinzufügen, Ändern oder Entfernen eines Artikels
+  - deutlicheres Vibrationsmuster beim erfolgreichen Verkaufsabschluss
+  - in den Einstellungen ein-/ausschaltbar
+- **PWA-Installation**:
+  - App-Manifest mit 192px- und 512px-App-Icon
+  - Standalone-Darstellung auf unterstützten Geräten
+  - Installationsbutton in den Einstellungen, wenn der Browser ihn anbietet
+- **Offline-Start** bleibt erhalten und wurde für die PWA erweitert.
+- **Update-Funktion**:
+  - in den Einstellungen kann aktiv nach einer neuen Version gesucht werden
+  - eine fertig geladene neue Version wird angezeigt und kann per Button aktiviert werden
+  - danach lädt die App automatisch neu
+- **Handy-/Tablet-Ausrichtung optimiert**:
+  - Hochformat bleibt auf eine gut bedienbare Kassenansicht ausgelegt
+  - im Querformat werden bei kleinen Displays Artikel und Verkaufsabschluss platzsparend nebeneinander dargestellt
+- **Touch-Bedienung verbessert**:
+  - größere Mindest-Touchflächen
+  - keine klebenden Hover-Zustände auf Touchgeräten
+  - unmittelbares optisches Feedback beim Tippen
+- Der App-Name wird nun auch in der mobilen Kopfzeile aktualisiert.
 
-Neu in V0.10:
-- Zwei Modi für die Eingabe des gegebenen Geldes: Schnellwahl und Tastenfeld.
-- Tastenfeld mit 0–9, Komma, 00, Passend und Löschtaste.
-- Schnelle Cent-Eingabe: 2000 entspricht 20,00 €.
-- Der zuletzt verwendete Eingabemodus wird lokal gespeichert.
+## GitHub Pages
 
-# KassenApp V0.9
+Alle Dateien und den Ordner `icons` in das Repository hochladen. Für Offline/PWA muss die Seite über HTTPS laufen; GitHub Pages erfüllt diese Voraussetzung.
 
-## Fehlerbehebung
-- Der Fehler `normalizeOrder is not defined` beim Speichern von Artikeln ist behoben.
-- Die fehlende Funktion zur Normalisierung der Artikelreihenfolge wurde wieder ergänzt.
-- Sie wird beim Anlegen, Bearbeiten und Löschen von Artikeln verwendet.
-- JavaScript-Syntax wurde nach der Reparatur geprüft.
+## Hinweis zur Haptik
 
-## Parkplatz
-- Auswertung über Verkaufszeiten / größter Ansturm
-- Aufteilung Essen / Getränke
-- Historische Artikelversionierung
-
-## V0.13
-- Mobile Einstellungen: Aktiv/Inaktiv-Schalter bleibt vollständig innerhalb der Artikelkarte.
-- Mobile Tastenfeldeingabe: Zahlentasten bleiben nach einem Tap nicht mehr durch einen Touch-Hover-Zustand grün.
-
-
-## V0.13 – Offline-Betrieb
-- Service Worker speichert die App-Oberfläche lokal im Browser.
-- Nach dem ersten erfolgreichen Laden über GitHub Pages kann die KassenApp auch ohne Internet geöffnet und benutzt werden.
-- Verkäufe, Artikel und Einstellungen bleiben weiterhin lokal im Browser gespeichert.
-- Bei einer neuen veröffentlichten Version wird der App-Cache automatisch erneuert.
-
-### Offline testen
-1. V0.13 auf GitHub Pages veröffentlichen.
-2. Die Seite auf dem Handy bei bestehender Internetverbindung einmal vollständig öffnen.
-3. Danach Flugmodus einschalten.
-4. Seite neu öffnen bzw. neu laden. Die Kasse sollte weiterhin funktionieren.
-
-Hinweis: Beim allerersten Aufruf ist Internet nötig, damit die App-Dateien lokal gespeichert werden können.
+Die Vibrations-API wird nicht von allen Browsern unterstützt. Wenn sie fehlt, läuft die App ohne Einschränkung weiter.

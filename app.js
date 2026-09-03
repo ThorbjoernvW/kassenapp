@@ -12,7 +12,8 @@ const defaultState = {
     { id: crypto.randomUUID(), name: "Getränk 3", category: "drink", price: 3.00, icon: "☕", active: true, order: 6, color: "#b7c6e6" }
   ],
   sales: [],
-  paymentMode: "quick"
+  paymentMode: "quick",
+  hapticsEnabled: true
 };
 
 let state = loadState();
@@ -35,6 +36,7 @@ function loadState() {
       color: p.color || defaultColors[i % defaultColors.length]
     }));
     parsed.paymentMode = parsed.paymentMode === "keypad" ? "keypad" : "quick";
+    parsed.hapticsEnabled = parsed.hapticsEnabled !== false;
     return parsed;
   } catch {
     return structuredClone(defaultState);
@@ -43,6 +45,14 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+
+function haptic(pattern = 18) {
+  if (!state.hapticsEnabled) return;
+  if (typeof navigator.vibrate === "function") {
+    try { navigator.vibrate(pattern); } catch {}
+  }
 }
 
 function money(value) {
@@ -81,6 +91,8 @@ function cartTotal() {
 
 function renderAppName() {
   document.getElementById("appTitle").textContent = state.appName || "KassenApp";
+  const mobileTitle = document.getElementById("mobileAppTitle");
+  if (mobileTitle) mobileTitle.textContent = state.appName || "KassenApp";
   document.getElementById("appNameInput").value = state.appName || "KassenApp";
 }
 
@@ -128,6 +140,7 @@ function productButton(product) {
 
 function addToCart(id) {
   cart.set(id, (cart.get(id) || 0) + 1);
+  haptic(14);
   renderCart();
 }
 
@@ -135,6 +148,7 @@ function changeQty(id, delta) {
   const next = (cart.get(id) || 0) + delta;
   if (next <= 0) cart.delete(id);
   else cart.set(id, next);
+  haptic(12);
   renderCart();
 }
 
@@ -171,6 +185,7 @@ function renderCart() {
     row.querySelector("[data-plus]").addEventListener("click", () => changeQty(id, 1));
     row.querySelector("[data-delete]").addEventListener("click", () => {
       cart.delete(id);
+      haptic(16);
       renderCart();
     });
     list.appendChild(row);
@@ -308,6 +323,7 @@ function completeSale() {
 
   state.sales.push(sale);
   saveState();
+  haptic([30, 45, 55]);
   clearCart();
   setCashMessage(`Verkauf über ${money(total)} gespeichert.`);
   renderSales();
@@ -523,6 +539,8 @@ function closeSaleDetail() {
   document.getElementById("saleDrawerBackdrop").classList.remove("open");
 }
 function renderSettings() {
+  const hapticsToggle = document.getElementById("hapticsToggle");
+  if (hapticsToggle) hapticsToggle.checked = state.hapticsEnabled !== false;
   renderAppName();
   const list = document.getElementById("settingsList");
   list.innerHTML = "";
@@ -1075,6 +1093,15 @@ document.getElementById("saleDrawerBackdrop").addEventListener("click", closeSal
 const saveProductBtn = document.getElementById("saveProductBtn");
 if (saveProductBtn) {
   saveProductBtn.addEventListener("click", saveProductFromForm);
+}
+
+const hapticsToggle = document.getElementById("hapticsToggle");
+if (hapticsToggle) {
+  hapticsToggle.addEventListener("change", (e) => {
+    state.hapticsEnabled = e.target.checked;
+    saveState();
+    if (state.hapticsEnabled) haptic(20);
+  });
 }
 
 renderAll();
