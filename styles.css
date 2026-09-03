@@ -2347,3 +2347,63 @@ body { min-width: 0; }
   .payment-mode-switch { width: 100%; }
   .payment-mode-btn { min-height: 38px; }
 }
+
+/* V0.11 – Handy-Navigation als kompaktes Menü oben rechts */
+@media (max-width: 760px) {
+  .app-sidebar {
+    inset: 72px 12px auto auto;
+    width: min(270px, calc(100vw - 24px));
+    height: auto;
+    max-height: calc(100vh - 84px);
+    padding: 8px;
+    border-radius: 16px;
+    background: #0a4a37;
+    box-shadow: 0 18px 44px rgba(4, 30, 22, .28);
+    transform: translateY(-10px) scale(.97);
+    transform-origin: top right;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    overflow: auto;
+  }
+
+  .app-sidebar.mobile-open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .app-sidebar .sidebar-brand,
+  .app-sidebar .sidebar-foot,
+  .app-sidebar .sidebar-mobile-close {
+    display: none !important;
+  }
+
+  .app-sidebar .nav {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin: 0;
+  }
+
+  .app-sidebar .nav-btn {
+    min-height: 50px;
+    border-radius: 11px;
+    padding: 0 14px;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .app-sidebar .nav-btn.active {
+    background: rgba(255,255,255,.12);
+  }
+
+  .sidebar-backdrop {
+    z-index: 69;
+    background: rgba(3,27,19,.12);
+  }
+
+  body.menu-open { overflow: auto; }
+}

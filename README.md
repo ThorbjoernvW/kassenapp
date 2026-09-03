@@ -1,3 +1,9 @@
+# KassenApp V0.11
+
+Neu in V0.11:
+- Mobile Burger-Navigation öffnet jetzt als kompaktes Dropdown oben rechts.
+- Keine vollflächige Seitenleiste mehr auf dem Handy.
+
 # KassenApp V0.10
 
 Neu in V0.10:
