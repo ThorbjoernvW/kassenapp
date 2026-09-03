@@ -965,11 +965,15 @@ document.querySelectorAll("[data-money]").forEach(btn =>
   btn.addEventListener("click", () => {
     document.getElementById("givenInput").value = btn.dataset.money;
     updateChange();
+    haptic(16);
+    btn.blur();
   })
 );
-document.getElementById("exactBtn").addEventListener("click", () => {
+document.getElementById("exactBtn").addEventListener("click", (event) => {
   document.getElementById("givenInput").value = cartTotal().toFixed(2).replace(".", ",");
   updateChange();
+  haptic(18);
+  event.currentTarget.blur();
 });
 document.querySelectorAll("[data-keypad]").forEach(btn =>
   btn.addEventListener("click", () => {
