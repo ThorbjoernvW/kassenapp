@@ -15,18 +15,18 @@ jobs:
 
       - name: Clone test repository
         run: |
-          git clone https://x-access-token:${{ secrets.TEST_REPO_TOKEN }}@github.com/${{ github.repository_owner }}/kassenapp-test.git test-repo
+          git clone https://x-access-token:${{ secrets.TEST_REPO_TOKEN }}@github.com/${{ github.repository_owner }}/kassenapp-test.git /tmp/kassenapp-test
 
       - name: Copy app files
         run: |
           rsync -av --delete \
             --exclude ".git" \
             --exclude ".github" \
-            ./ test-repo/
+            ./ /tmp/kassenapp-test/
 
       - name: Commit and push test version
         run: |
-          cd test-repo
+          cd /tmp/kassenapp-test
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
