@@ -3017,3 +3017,181 @@ body { min-width: 0; }
   #cashView.active .cash-keypad [data-keypad="0"] { grid-column: 1 / span 2; grid-row: 4; }
   #cashView.active .cash-keypad .keypad-exact { grid-column: 3 / span 2; grid-row: 4; }
 }
+
+/* =========================================================
+   KassenApp V0.22.2 – Artikelkacheln: Grundlayout
+   Thema dieser Version: nur Aufbau, Typografie und Farbnutzung
+   der Artikelkacheln. Die Bilddarstellung bleibt unverändert.
+   ========================================================= */
+.product-btn {
+  min-height: 142px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--product-color, #d5e8de) 38%, #16382d);
+  border-radius: 16px;
+  background: #fff !important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--product-color, #d5e8de) 16%, #ffffff) 0%,
+      color-mix(in srgb, var(--product-color, #d5e8de) 8%, #ffffff) 100%) !important;
+  box-shadow: 0 7px 18px rgba(22, 56, 45, .08);
+  color: var(--text);
+  isolation: isolate;
+}
+
+.product-btn::before {
+  inset: 0 auto 0 0;
+  width: 6px;
+  border-radius: 16px 0 0 16px;
+  background: var(--product-color, #d5e8de);
+}
+
+.product-btn::after { display: none; }
+
+.product-btn:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--product-color, #d5e8de) 58%, #16382d);
+  box-shadow: 0 11px 24px rgba(22, 56, 45, .12);
+}
+
+.product-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 13px 14px 14px 17px;
+}
+
+.product-name {
+  margin: 0;
+  min-width: 0;
+  font-size: 1.02rem;
+  font-weight: 850;
+  line-height: 1.18;
+  letter-spacing: -.01em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.product-price {
+  width: fit-content;
+  margin: auto 0 0;
+  padding: 5px 9px;
+  border: 1px solid rgba(22, 56, 45, .10);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  color: var(--green-950);
+  font-size: 1.02rem;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.product-media.icon {
+  height: 70px;
+  min-height: 70px;
+  place-items: start;
+  padding: 16px 14px 0 17px;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.product-btn.no-media .product-copy {
+  min-height: 140px;
+  padding: 16px 14px 14px 17px;
+}
+
+.product-btn.no-media .product-name {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+/* Tablet: gleiche Kachellogik, nur kompakter. */
+@media (min-width: 761px) and (max-width: 1180px) {
+  #cashView.active .product-btn {
+    min-height: 92px;
+    padding: 0;
+    border-radius: 14px;
+  }
+
+  #cashView.active .product-btn::before { border-radius: 14px 0 0 14px; }
+  #cashView.active .product-copy { padding: 10px 11px 11px 14px; gap: 6px; }
+  #cashView.active .product-name { font-size: .94rem; }
+  #cashView.active .product-price { padding: 4px 7px; font-size: .94rem; }
+  #cashView.active .product-media.icon {
+    height: 52px;
+    min-height: 52px;
+    padding: 12px 11px 0 14px;
+    font-size: 1.7rem;
+  }
+  #cashView.active .product-btn.no-media .product-copy {
+    min-height: 90px;
+    padding: 12px 11px 11px 14px;
+  }
+}
+
+/* Handy hoch: gut lesbar, ohne unnötig hohe Kacheln. */
+@media (max-width: 760px) and (orientation: portrait) {
+  #cashView.active .product-btn {
+    min-height: 116px;
+    padding: 0;
+    border-radius: 14px;
+  }
+
+  #cashView.active .product-btn::before { border-radius: 14px 0 0 14px; }
+  #cashView.active .product-copy { padding: 11px 11px 12px 14px; gap: 7px; }
+  #cashView.active .product-name { font-size: .98rem; }
+  #cashView.active .product-price { padding: 5px 8px; font-size: .96rem; }
+  #cashView.active .product-media.icon {
+    height: 58px;
+    min-height: 58px;
+    padding: 13px 11px 0 14px;
+    font-size: 1.8rem;
+  }
+  #cashView.active .product-btn.no-media .product-copy {
+    min-height: 114px;
+    padding: 14px 11px 12px 14px;
+  }
+}
+
+/* Handy quer: das kompakte Landscape-Raster aus V0.22 bleibt erhalten. */
+@media (orientation: landscape) and (max-height: 650px) and (pointer: coarse) {
+  #cashView.active .product-btn {
+    min-height: 74px;
+    padding: 0;
+    border-radius: 11px;
+  }
+
+  #cashView.active .product-btn::before {
+    width: 5px;
+    border-radius: 11px 0 0 11px;
+  }
+
+  #cashView.active .product-copy {
+    padding: 7px 8px 8px 11px;
+    gap: 4px;
+  }
+
+  #cashView.active .product-name {
+    font-size: .82rem;
+    line-height: 1.12;
+  }
+
+  #cashView.active .product-price {
+    padding: 3px 6px;
+    font-size: .8rem;
+  }
+
+  #cashView.active .product-media.icon {
+    height: 34px;
+    min-height: 34px;
+    padding: 8px 8px 0 11px;
+    font-size: 1.35rem;
+  }
+
+  #cashView.active .product-btn.no-media .product-copy {
+    min-height: 72px;
+    padding: 8px 8px 8px 11px;
+  }
+}
