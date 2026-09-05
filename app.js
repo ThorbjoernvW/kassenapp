@@ -1,3 +1,5 @@
+const APP_VERSION = document.documentElement.dataset.appVersion || "V0.22.4.1";
+
 
 const STORAGE_KEY = "kassenapp_v0_1_state";
 
@@ -12,7 +14,8 @@ const defaultState = {
     { id: crypto.randomUUID(), name: "Getränk 3", category: "drink", price: 3.00, icon: "☕", active: true, order: 6, color: "#b7c6e6" }
   ],
   sales: [],
-  paymentMode: "quick"
+  paymentMode: "quick",
+  hapticsEnabled: true
 };
 
 let state = loadState();
@@ -21,6 +24,18 @@ let salesPage = 1;
 let salesPageSize = 10;
 let keypadSequence = "";
 
+function sanitizeProduct(product, fallbackColor = "#d8eadf") {
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    price: Number(product.price) || 0,
+    icon: product.icon || "",
+    active: product.active !== false,
+    order: Number(product.order) || 0,
+    color: product.color || fallbackColor
+  };
+}
 
 function loadState() {
   try {
@@ -29,12 +44,9 @@ function loadState() {
     const parsed = JSON.parse(raw);
     if (!parsed.products || !parsed.sales) throw new Error("invalid");
     const defaultColors = ["#f2c66d", "#e8a98d", "#e6bd86", "#9fc8d8", "#9fcbb3", "#b7c6e6"];
-    parsed.products = parsed.products.map((p, i) => ({
-      ...p,
-      imageData: p.imageData || "",
-      color: p.color || defaultColors[i % defaultColors.length]
-    }));
+    parsed.products = parsed.products.map((p, i) => sanitizeProduct(p, defaultColors[i % defaultColors.length]));
     parsed.paymentMode = parsed.paymentMode === "keypad" ? "keypad" : "quick";
+    parsed.hapticsEnabled = parsed.hapticsEnabled !== false;
     return parsed;
   } catch {
     return structuredClone(defaultState);
@@ -43,6 +55,14 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+
+function haptic(pattern = 18) {
+  if (!state.hapticsEnabled) return;
+  if (typeof navigator.vibrate === "function") {
+    try { navigator.vibrate(pattern); } catch {}
+  }
 }
 
 function money(value) {
@@ -81,6 +101,8 @@ function cartTotal() {
 
 function renderAppName() {
   document.getElementById("appTitle").textContent = state.appName || "KassenApp";
+  const mobileTitle = document.getElementById("mobileAppTitle");
+  if (mobileTitle) mobileTitle.textContent = state.appName || "KassenApp";
   document.getElementById("appNameInput").value = state.appName || "KassenApp";
 }
 
@@ -104,17 +126,13 @@ function renderProducts() {
 function productButton(product) {
   const btn = document.createElement("button");
   btn.type = "button";
-  const hasImage = Boolean(product.imageData);
   const hasIcon = Boolean(product.icon && product.icon.trim());
-  btn.className = `product-btn ${product.category} ${(!hasImage && !hasIcon) ? "no-media" : ""}`;
+  btn.className = `product-btn ${product.category} ${hasIcon ? "has-icon" : "no-media"}`;
   btn.style.setProperty("--product-color", product.color || (product.category === "food" ? "#f2c66d" : "#9fc8d8"));
 
-  let media = "";
-  if (hasImage) {
-    media = `<div class="product-media image"><img src="${product.imageData}" alt="" /></div>`;
-  } else if (hasIcon) {
-    media = `<div class="product-media icon">${escapeHtml(product.icon)}</div>`;
-  }
+  const media = hasIcon
+    ? `<div class="product-media icon">${escapeHtml(product.icon)}</div>`
+    : "";
 
   btn.innerHTML = `
     ${media}
@@ -128,6 +146,7 @@ function productButton(product) {
 
 function addToCart(id) {
   cart.set(id, (cart.get(id) || 0) + 1);
+  haptic(14);
   renderCart();
 }
 
@@ -135,6 +154,7 @@ function changeQty(id, delta) {
   const next = (cart.get(id) || 0) + delta;
   if (next <= 0) cart.delete(id);
   else cart.set(id, next);
+  haptic(12);
   renderCart();
 }
 
@@ -171,6 +191,7 @@ function renderCart() {
     row.querySelector("[data-plus]").addEventListener("click", () => changeQty(id, 1));
     row.querySelector("[data-delete]").addEventListener("click", () => {
       cart.delete(id);
+      haptic(16);
       renderCart();
     });
     list.appendChild(row);
@@ -308,6 +329,7 @@ function completeSale() {
 
   state.sales.push(sale);
   saveState();
+  haptic([30, 45, 55]);
   clearCart();
   setCashMessage(`Verkauf über ${money(total)} gespeichert.`);
   renderSales();
@@ -433,13 +455,11 @@ function renderSales() {
   stats.innerHTML = sorted.length
     ? sorted.map(item => {
         const product = state.products.find(p => p.id === item.productId);
-        const image = product?.imageData
-          ? `<img src="${product.imageData}" alt="" />`
-          : `<span>${escapeHtml(product?.icon || item.name.slice(0, 1).toUpperCase())}</span>`;
+        const media = `<span>${escapeHtml(product?.icon || item.name.slice(0, 1).toUpperCase())}</span>`;
         const color = product?.color || "#d8eadf";
         return `
           <article class="top-product-card" style="--item-color:${color}">
-            <div class="top-product-media">${image}</div>
+            <div class="top-product-media">${media}</div>
             <div class="top-product-copy">
               <strong>${escapeHtml(item.name)}</strong>
               <span><b>${item.qty}</b> verkauft</span>
@@ -523,6 +543,8 @@ function closeSaleDetail() {
   document.getElementById("saleDrawerBackdrop").classList.remove("open");
 }
 function renderSettings() {
+  const hapticsToggle = document.getElementById("hapticsToggle");
+  if (hapticsToggle) hapticsToggle.checked = state.hapticsEnabled !== false;
   renderAppName();
   const list = document.getElementById("settingsList");
   list.innerHTML = "";
@@ -533,9 +555,7 @@ function renderSettings() {
     row.draggable = true;
     row.dataset.productId = p.id;
 
-    const preview = p.imageData
-      ? `<img class="settings-thumb" src="${p.imageData}" alt="" />`
-      : `<div class="settings-thumb fallback">${escapeHtml(p.icon || p.name.slice(0,1).toUpperCase())}</div>`;
+    const preview = `<div class="settings-thumb fallback">${escapeHtml(p.icon || p.name.slice(0,1).toUpperCase())}</div>`;
 
     row.innerHTML = `
       <div class="drag-handle" title="Ziehen zum Verschieben" aria-hidden="true">⋮⋮</div>
@@ -581,6 +601,14 @@ function renderSettings() {
     });
     row.querySelector("[data-edit]").addEventListener("click", () => openProductDialog(p.id));
     row.querySelector("[data-delete]").addEventListener("click", () => deleteProduct(p.id));
+
+    // V0.22.2.1: Die Artikelkarte öffnet den Editor auf allen Geräten.
+    // Interaktive Bedienelemente behalten ihre eigene Funktion.
+    row.addEventListener("click", (e) => {
+      if (e.target.closest("button, input, label, .drag-handle")) return;
+      haptic(10);
+      openProductDialog(p.id);
+    });
 
     row.addEventListener("dragstart", (e) => {
       row.classList.add("dragging");
@@ -655,49 +683,6 @@ function moveProduct(id, delta) {
   renderProducts();
 }
 
-let pendingProductImageData = null;
-
-function updateProductImagePreview(dataUrl) {
-  const preview = document.getElementById("productImagePreview");
-  const text = document.getElementById("imageDropText");
-  const removeBtn = document.getElementById("removeProductImageBtn");
-  if (dataUrl) {
-    preview.src = dataUrl;
-    preview.hidden = false;
-    text.textContent = "Anderes Bild auswählen";
-    removeBtn.style.visibility = "visible";
-  } else {
-    preview.removeAttribute("src");
-    preview.hidden = true;
-    text.textContent = "Bild auswählen";
-    removeBtn.style.visibility = "hidden";
-  }
-}
-
-function compressImage(file, maxWidth = 640, maxHeight = 420, quality = 0.78) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = reject;
-      img.onload = () => {
-        const scale = Math.min(1, maxWidth / img.width, maxHeight / img.height);
-        const width = Math.max(1, Math.round(img.width * scale));
-        const height = Math.max(1, Math.round(img.height * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 function openProductDialog(id = null) {
   const dialog = document.getElementById("productDialog");
   showProductFormMessage("");
@@ -711,9 +696,6 @@ function openProductDialog(id = null) {
   document.getElementById("productColorValue").textContent = document.getElementById("productColorInput").value;
   document.getElementById("productIconInput").value = p?.icon || "";
   document.getElementById("productActiveInput").checked = p ? p.active : true;
-  document.getElementById("productImageInput").value = "";
-  pendingProductImageData = p?.imageData || "";
-  updateProductImagePreview(pendingProductImageData);
   dialog.showModal();
 }
 
@@ -759,7 +741,6 @@ function saveProductFromForm(e) {
     const color = colorInput.value || "#d8eadf";
     const icon = iconInput.value.trim();
     const active = activeInput.checked;
-    const imageData = pendingProductImageData || "";
 
     if (!name) {
       showProductFormMessage("Bitte gib einen Artikelnamen ein.");
@@ -779,7 +760,7 @@ function saveProductFromForm(e) {
         showProductFormMessage("Der Artikel wurde nicht gefunden.");
         return;
       }
-      Object.assign(product, { name, category, price, color, icon, active, imageData });
+      Object.assign(product, { name, category, price, color, icon, active });
     } else {
       state.products.push({
         id: createProductId(),
@@ -789,7 +770,6 @@ function saveProductFromForm(e) {
         color,
         icon,
         active,
-        imageData,
         order: state.products.length + 1
       });
     }
@@ -869,11 +849,7 @@ function restoreData(file) {
       const parsed = JSON.parse(reader.result);
       if (!parsed.products || !parsed.sales) throw new Error("Ungültiges Format");
       const defaultColors = ["#f2c66d", "#e8a98d", "#e6bd86", "#9fc8d8", "#9fcbb3", "#b7c6e6"];
-      parsed.products = parsed.products.map((p, i) => ({
-        ...p,
-        imageData: p.imageData || "",
-        color: p.color || defaultColors[i % defaultColors.length]
-      }));
+      parsed.products = parsed.products.map((p, i) => sanitizeProduct(p, defaultColors[i % defaultColors.length]));
       state = parsed;
       normalizeOrder();
       saveState();
@@ -909,6 +885,8 @@ function escapeHtml(value) {
 }
 
 function renderAll() {
+  const versionLabel = document.getElementById("appVersionLabel");
+  if (versionLabel) versionLabel.textContent = APP_VERSION;
   renderAppName();
   renderProducts();
   renderCart();
@@ -921,19 +899,36 @@ document.querySelectorAll(".nav-btn").forEach(btn =>
   btn.addEventListener("click", () => switchView(btn.dataset.view))
 );
 
+function setMobileMenuState(open) {
+  const sidebar = document.getElementById("appSidebar");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  const button = document.getElementById("mobileMenuBtn");
+
+  sidebar.classList.toggle("mobile-open", open);
+  backdrop.classList.toggle("open", open);
+  document.body.classList.toggle("menu-open", open);
+
+  button.setAttribute("aria-expanded", String(open));
+  button.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+  button.textContent = open ? "×" : "☰";
+}
+
 function openMobileMenu() {
-  document.getElementById("appSidebar").classList.add("mobile-open");
-  document.getElementById("sidebarBackdrop").classList.add("open");
-  document.body.classList.add("menu-open");
+  setMobileMenuState(true);
 }
 
 function closeMobileMenu() {
-  document.getElementById("appSidebar").classList.remove("mobile-open");
-  document.getElementById("sidebarBackdrop").classList.remove("open");
-  document.body.classList.remove("menu-open");
+  setMobileMenuState(false);
 }
 
-document.getElementById("mobileMenuBtn").addEventListener("click", openMobileMenu);
+function toggleMobileMenu(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  const isOpen = document.getElementById("appSidebar").classList.contains("mobile-open");
+  setMobileMenuState(!isOpen);
+}
+
+document.getElementById("mobileMenuBtn").addEventListener("click", toggleMobileMenu);
 document.getElementById("closeMobileMenuBtn").addEventListener("click", closeMobileMenu);
 document.getElementById("sidebarBackdrop").addEventListener("click", closeMobileMenu);
 document.querySelectorAll(".app-sidebar .nav-btn").forEach(btn => btn.addEventListener("click", closeMobileMenu));
@@ -947,25 +942,34 @@ document.querySelectorAll("[data-money]").forEach(btn =>
   btn.addEventListener("click", () => {
     document.getElementById("givenInput").value = btn.dataset.money;
     updateChange();
+    haptic(16);
+    btn.blur();
   })
 );
-document.getElementById("exactBtn").addEventListener("click", () => {
+document.getElementById("exactBtn").addEventListener("click", (event) => {
   document.getElementById("givenInput").value = cartTotal().toFixed(2).replace(".", ",");
   updateChange();
+  haptic(18);
+  event.currentTarget.blur();
 });
 document.querySelectorAll("[data-keypad]").forEach(btn =>
   btn.addEventListener("click", () => {
     handleKeypadPress(btn.dataset.keypad);
+    haptic(14);
     btn.blur();
   })
 );
-document.getElementById("keypadBackspaceBtn").addEventListener("click", () => {
+document.getElementById("keypadBackspaceBtn").addEventListener("click", (event) => {
   keypadSequence = keypadSequence.slice(0, -1);
   syncKeypadInput();
+  haptic(14);
+  event.currentTarget.blur();
 });
-document.getElementById("keypadExactBtn").addEventListener("click", () => {
+document.getElementById("keypadExactBtn").addEventListener("click", (event) => {
   keypadSequence = amountToKeypadSequence(cartTotal());
   syncKeypadInput();
+  haptic(18);
+  event.currentTarget.blur();
 });
 document.getElementById("clearCartBtn").addEventListener("click", () => clearCart(true));
 document.getElementById("completeSaleBtn").addEventListener("click", completeSale);
@@ -1034,27 +1038,6 @@ document.getElementById("productColorInput").addEventListener("input", (e) => {
 document.getElementById("cancelProductBtn").addEventListener("click", () => document.getElementById("productDialog").close());
 document.getElementById("closeProductDialogBtn").addEventListener("click", () => document.getElementById("productDialog").close());
 
-document.getElementById("productImageInput").addEventListener("change", async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  if (!file.type.startsWith("image/")) {
-    alert("Bitte wähle eine Bilddatei aus.");
-    return;
-  }
-  try {
-    pendingProductImageData = await compressImage(file);
-    updateProductImagePreview(pendingProductImageData);
-  } catch {
-    alert("Das Bild konnte nicht verarbeitet werden.");
-  }
-});
-
-document.getElementById("removeProductImageBtn").addEventListener("click", () => {
-  pendingProductImageData = "";
-  document.getElementById("productImageInput").value = "";
-  updateProductImagePreview("");
-});
-
 document.getElementById("appNameInput").addEventListener("change", (e) => {
   state.appName = e.target.value.trim() || "KassenApp";
   saveState();
@@ -1075,6 +1058,15 @@ document.getElementById("saleDrawerBackdrop").addEventListener("click", closeSal
 const saveProductBtn = document.getElementById("saveProductBtn");
 if (saveProductBtn) {
   saveProductBtn.addEventListener("click", saveProductFromForm);
+}
+
+const hapticsToggle = document.getElementById("hapticsToggle");
+if (hapticsToggle) {
+  hapticsToggle.addEventListener("change", (e) => {
+    state.hapticsEnabled = e.target.checked;
+    saveState();
+    if (state.hapticsEnabled) haptic(20);
+  });
 }
 
 renderAll();

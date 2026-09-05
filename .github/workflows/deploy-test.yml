@@ -1,0 +1,42 @@
+name: Deploy develop to test site
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v5
+
+      - name: Clone test repository
+        run: |
+          git clone https://x-access-token:${{ secrets.TEST_REPO_TOKEN }}@github.com/${{ github.repository_owner }}/kassenapp-test.git /tmp/kassenapp-test
+
+      - name: Copy app files
+        run: |
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            ./ /tmp/kassenapp-test/
+
+      - name: Commit and push test version
+        run: |
+          cd /tmp/kassenapp-test
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to deploy"
+            exit 0
+          fi
+
+          git commit -m "Deploy develop ${GITHUB_SHA}"
+          git push origin main
