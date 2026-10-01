@@ -1,4 +1,4 @@
-const APP_VERSION = document.documentElement.dataset.appVersion || "V0.22.4.1";
+const APP_VERSION = document.documentElement.dataset.appVersion || "V0.24.4.3";
 
 
 const STORAGE_KEY = "kassenapp_v0_1_state";
@@ -99,6 +99,18 @@ function cartTotal() {
   return total;
 }
 
+function cartCategoryTotals() {
+  const totals = { food: 0, drink: 0 };
+
+  for (const [id, qty] of cart.entries()) {
+    const p = getProduct(id);
+    if (!p || !(p.category in totals)) continue;
+    totals[p.category] += p.price * qty;
+  }
+
+  return totals;
+}
+
 function renderAppName() {
   document.getElementById("appTitle").textContent = state.appName || "KassenApp";
   const mobileTitle = document.getElementById("mobileAppTitle");
@@ -197,7 +209,10 @@ function renderCart() {
     list.appendChild(row);
   }
 
-  document.getElementById("grandTotal").textContent = money(cartTotal());
+  const categoryTotals = cartCategoryTotals();
+  document.getElementById("foodSubtotal").textContent = money(categoryTotals.food);
+  document.getElementById("drinkSubtotal").textContent = money(categoryTotals.drink);
+  document.getElementById("grandTotal").textContent = money(categoryTotals.food + categoryTotals.drink);
   updateChange();
 }
 
@@ -388,10 +403,10 @@ function renderSales() {
 
   head.innerHTML = `
     <tr>
-      <th>Uhrzeit</th>
-      <th>Artikel</th>
-      <th>Betrag</th>
-      <th>Status</th>
+      <th class="sale-time-col">Uhrzeit</th>
+      <th class="sale-items-col">Artikel</th>
+      <th class="sale-amount-col">Betrag</th>
+      <th class="sale-status-col">Status</th>
       <th class="chevron-col"></th>
     </tr>`;
 
@@ -413,7 +428,7 @@ function renderSales() {
       <td class="sale-time">${parts.time}</td>
       <td class="sale-items-cell">${articleText}</td>
       <td class="sale-amount">${money(sale.total)}</td>
-      <td>
+      <td class="sale-status-cell">
         <span class="status-pill ${sale.status === "cancelled" ? "cancelled" : "completed"}">
           ${sale.status === "cancelled" ? "Storniert" : "Abgeschlossen"}
         </span>
@@ -837,9 +852,256 @@ async function copySales() {
   }
 }
 
+let availablePresets = [];
+let presetIndexReady = false;
+
+function renderPresetSelection() {
+  const select = document.getElementById("presetSelect");
+  const status = document.getElementById("presetStatus");
+  const clearBtn = document.getElementById("clearPresetSelectionBtn");
+  const loadBtn = document.getElementById("loadPresetBtn");
+  if (!select || !status) return;
+
+  select.innerHTML = "";
+  if (clearBtn) clearBtn.disabled = true;
+  if (loadBtn) loadBtn.disabled = true;
+
+  if (!availablePresets.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Keine Presets verfügbar";
+    select.appendChild(option);
+    select.disabled = true;
+    status.textContent = "Keine Presets verfügbar.";
+    return;
+  }
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Preset auswählen …";
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  select.appendChild(placeholder);
+
+  availablePresets.forEach((preset, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = preset.name;
+    select.appendChild(option);
+  });
+
+  select.disabled = false;
+  status.textContent = `${availablePresets.length} Preset${availablePresets.length === 1 ? "" : "s"} verfügbar.`;
+}
+
+function updatePresetSelectionStatus() {
+  const select = document.getElementById("presetSelect");
+  const status = document.getElementById("presetStatus");
+  const clearBtn = document.getElementById("clearPresetSelectionBtn");
+  const loadBtn = document.getElementById("loadPresetBtn");
+  if (!select || !status) return;
+
+  if (select.value === "") {
+    if (clearBtn) clearBtn.disabled = true;
+    if (loadBtn) loadBtn.disabled = true;
+    status.textContent = `${availablePresets.length} Preset${availablePresets.length === 1 ? "" : "s"} verfügbar.`;
+    return;
+  }
+
+  const preset = availablePresets[Number(select.value)];
+  if (!preset) return;
+  if (clearBtn) clearBtn.disabled = false;
+  if (loadBtn) loadBtn.disabled = false;
+  status.textContent = `Ausgewählt: ${preset.name}`;
+}
+
+function clearPresetSelection() {
+  const select = document.getElementById("presetSelect");
+  if (!select || select.disabled) return;
+  select.value = "";
+  updatePresetSelectionStatus();
+}
+
+async function loadPresetIndex() {
+  const select = document.getElementById("presetSelect");
+  const status = document.getElementById("presetStatus");
+  if (!select || !status) return;
+
+  select.disabled = true;
+  status.textContent = "Preset-Liste wird geladen …";
+
+  try {
+    const response = await fetch("./presets/index.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    if (!data || !Array.isArray(data.presets)) throw new Error("Ungültiger Preset-Index");
+
+    availablePresets = data.presets
+      .filter(preset => preset && typeof preset.name === "string" && typeof preset.file === "string")
+      .map(preset => ({ name: preset.name.trim(), file: preset.file.trim() }))
+      .filter(preset => preset.name && preset.file && !preset.file.includes("..") && !preset.file.startsWith("/"));
+
+    presetIndexReady = true;
+    renderPresetSelection();
+    updatePresetExportButton();
+  } catch (error) {
+    console.error("Preset-Liste konnte nicht geladen werden:", error);
+    availablePresets = [];
+    presetIndexReady = false;
+    select.innerHTML = '<option value="">Preset-Liste nicht verfügbar</option>';
+    select.disabled = true;
+    const clearBtn = document.getElementById("clearPresetSelectionBtn");
+    const loadBtn = document.getElementById("loadPresetBtn");
+    if (clearBtn) clearBtn.disabled = true;
+    if (loadBtn) loadBtn.disabled = true;
+    status.textContent = "Preset-Liste konnte nicht geladen werden.";
+    updatePresetExportButton();
+  }
+}
+
+function validatePresetProducts(data) {
+  if (!data || data.format !== "kassenapp-products" || Number(data.version) !== 1 || !Array.isArray(data.products)) {
+    throw new Error("Ungültiges Preset-Format");
+  }
+  if (!data.products.length) throw new Error("Das Preset enthält keine Artikel");
+
+  const allowedCategories = new Set(["food", "drink"]);
+  return data.products.map((product, index) => {
+    if (!product || typeof product !== "object") throw new Error(`Artikel ${index + 1} ist ungültig`);
+    const name = typeof product.name === "string" ? product.name.trim() : "";
+    const category = typeof product.category === "string" ? product.category.trim() : "";
+    const price = Number(product.price);
+    if (!name) throw new Error(`Artikel ${index + 1} hat keinen Namen`);
+    if (!allowedCategories.has(category)) throw new Error(`Artikel „${name}“ hat eine ungültige Kategorie`);
+    if (!Number.isFinite(price) || price < 0) throw new Error(`Artikel „${name}“ hat einen ungültigen Preis`);
+
+    return sanitizeProduct({
+      id: crypto.randomUUID(),
+      name,
+      category,
+      price,
+      icon: typeof product.icon === "string" ? product.icon : "",
+      active: product.active !== false,
+      order: index + 1,
+      color: typeof product.color === "string" && product.color.trim() ? product.color.trim() : "#d8eadf"
+    });
+  });
+}
+
+async function loadSelectedPreset() {
+  const select = document.getElementById("presetSelect");
+  const status = document.getElementById("presetStatus");
+  const loadBtn = document.getElementById("loadPresetBtn");
+  const clearBtn = document.getElementById("clearPresetSelectionBtn");
+  if (!select || !status || select.value === "") return;
+
+  const preset = availablePresets[Number(select.value)];
+  if (!preset) return;
+
+  const confirmed = confirm(
+    `Preset „${preset.name}“ laden?\n\nDie aktuelle Artikelliste wird vollständig ersetzt. Bereits gespeicherte Verkäufe bleiben erhalten.`
+  );
+  if (!confirmed) return;
+
+  select.disabled = true;
+  if (loadBtn) loadBtn.disabled = true;
+  if (clearBtn) clearBtn.disabled = true;
+  status.textContent = `Preset „${preset.name}“ wird geladen …`;
+
+  try {
+    const response = await fetch(`./presets/${encodeURIComponent(preset.file)}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const products = validatePresetProducts(data);
+
+    // Erst nach vollständiger Prüfung den Zustand verändern.
+    state.products = products;
+    normalizeOrder();
+    saveState();
+    cart.clear();
+    renderAll();
+    setPaymentMode(state.paymentMode || "quick", false);
+
+    status.textContent = `Preset „${preset.name}“ wurde geladen (${products.length} Artikel).`;
+    haptic([22, 35, 22]);
+  } catch (error) {
+    console.error("Preset konnte nicht geladen werden:", error);
+    status.textContent = `Preset „${preset.name}“ konnte nicht geladen werden. Die Artikelliste wurde nicht verändert.`;
+    alert("Das Preset konnte nicht geladen werden. Die bestehende Artikelliste bleibt unverändert.");
+  } finally {
+    select.disabled = availablePresets.length === 0;
+    if (clearBtn) clearBtn.disabled = select.value === "";
+    if (loadBtn) loadBtn.disabled = select.value === "";
+  }
+}
+
 function backupData() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   downloadBlob(blob, `kassenapp_sicherung_${new Date().toISOString().slice(0,10)}.json`);
+}
+
+function presetFilename(name) {
+  const normalized = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+  return `${normalized || "preset"}.json`;
+}
+
+function updatePresetExportButton() {
+  const input = document.getElementById("presetNameInput");
+  const button = document.getElementById("exportProductPresetBtn");
+  if (!input || !button) return;
+  button.disabled = input.value.trim().length === 0 || !presetIndexReady;
+}
+
+function exportProductPreset() {
+  const nameInput = document.getElementById("presetNameInput");
+  const presetName = nameInput?.value.trim() || "";
+  if (!presetName) {
+    nameInput?.focus();
+    return;
+  }
+
+  const products = sortedProducts().map(product => ({
+    name: product.name,
+    category: product.category,
+    price: Number(product.price) || 0,
+    icon: product.icon || "",
+    active: product.active !== false,
+    order: Number(product.order) || 0,
+    color: product.color || "#d8eadf"
+  }));
+
+  const preset = {
+    format: "kassenapp-products",
+    version: 1,
+    name: presetName,
+    products
+  };
+
+  const filename = presetFilename(presetName);
+  const presetBlob = new Blob([JSON.stringify(preset, null, 2)], { type: "application/json" });
+
+  // Den bereits geladenen Preset-Index übernehmen und den neuen Eintrag ergänzen.
+  // Gleicher Name oder gleicher Dateiname wird ersetzt, damit keine Duplikate entstehen.
+  const nextPresets = availablePresets
+    .filter(entry => entry.name !== presetName && entry.file !== filename)
+    .map(entry => ({ name: entry.name, file: entry.file }));
+  nextPresets.push({ name: presetName, file: filename });
+
+  const indexData = { presets: nextPresets };
+  const indexBlob = new Blob([JSON.stringify(indexData, null, 2)], { type: "application/json" });
+
+  downloadBlob(presetBlob, filename);
+  window.setTimeout(() => downloadBlob(indexBlob, "index.json"), 120);
+  window.setTimeout(() => {
+    alert(`Preset „${presetName}“ und die passende index.json wurden heruntergeladen.`);
+  }, 240);
 }
 
 function restoreData(file) {
@@ -1045,6 +1307,27 @@ document.getElementById("appNameInput").addEventListener("change", (e) => {
 });
 
 document.getElementById("backupBtn").addEventListener("click", backupData);
+const presetSelect = document.getElementById("presetSelect");
+if (presetSelect) presetSelect.addEventListener("change", updatePresetSelectionStatus);
+const clearPresetSelectionBtn = document.getElementById("clearPresetSelectionBtn");
+if (clearPresetSelectionBtn) clearPresetSelectionBtn.addEventListener("click", clearPresetSelection);
+const loadPresetBtn = document.getElementById("loadPresetBtn");
+if (loadPresetBtn) loadPresetBtn.addEventListener("click", loadSelectedPreset);
+loadPresetIndex();
+
+const presetNameInput = document.getElementById("presetNameInput");
+if (presetNameInput) {
+  presetNameInput.addEventListener("input", updatePresetExportButton);
+  presetNameInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && presetNameInput.value.trim()) {
+      event.preventDefault();
+      exportProductPreset();
+    }
+  });
+}
+const exportProductPresetBtn = document.getElementById("exportProductPresetBtn");
+if (exportProductPresetBtn) exportProductPresetBtn.addEventListener("click", exportProductPreset);
+updatePresetExportButton();
 document.getElementById("restoreInput").addEventListener("change", (e) => {
   const file = e.target.files?.[0];
   if (file) restoreData(file);

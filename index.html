@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="de" data-app-version="V0.22.4.1">
+<html lang="de" data-app-version="V0.24.4.3">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#16382d" />
   <title>KassenApp</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.22.4.1" />
+  <link rel="stylesheet" href="styles.css?v=0.24.4.3" />
 </head>
 <body>
   <div class="mobile-topbar">
@@ -51,7 +51,7 @@
         <div class="panel products-panel">
           <div class="panel-header">
             <div>
-              <h1>Kasse</h1>
+              <h1>Artikel</h1>
               <p>Artikel antippen, Menge anpassen und Verkauf abschließen.</p>
             </div>
           </div>
@@ -75,7 +75,7 @@
         <aside class="panel checkout-panel">
           <div class="panel-header">
             <div>
-              <h2>Aktueller Verkauf</h2>
+              <h2>Warenkorb</h2>
               <p id="cartHint">Noch keine Artikel ausgewählt.</p>
             </div>
             <button id="clearCartBtn" class="text-btn danger-soft" type="button">Leeren</button>
@@ -84,7 +84,18 @@
           <div id="cartList" class="cart-list"></div>
 
           <div class="totals">
-            <div class="total-row">
+            <h2 class="payment-column-title">Kasse</h2>
+            <div class="category-subtotals" aria-label="Zwischensummen nach Kategorie">
+              <div class="total-row total-subrow">
+                <span>Essen</span>
+                <strong id="foodSubtotal">0,00 €</strong>
+              </div>
+              <div class="total-row total-subrow">
+                <span>Getränke</span>
+                <strong id="drinkSubtotal">0,00 €</strong>
+              </div>
+            </div>
+            <div class="total-row total-grand-row">
               <span>Gesamt</span>
               <strong id="grandTotal">0,00 €</strong>
             </div>
@@ -263,7 +274,6 @@
             <h1>Einstellungen</h1>
             <p>Artikel, Preise, Reihenfolge und App-Bezeichnung verwalten.</p>
           </div>
-          <button id="addProductBtn" class="primary-btn" type="button">+ Artikel hinzufügen</button>
         </div>
 
         <div class="settings-meta">
@@ -293,7 +303,7 @@
             <div class="pwa-status-copy">
               <strong id="pwaStatusTitle">App wird geprüft …</strong>
               <span id="pwaStatusText">Offline- und Installationsstatus werden ermittelt.</span>
-              <span class="app-version-line">Installierte Version: <strong id="appVersionLabel">V0.22.4.1</strong><br>
+              <span class="app-version-line">Installierte Version: <strong id="appVersionLabel">V0.24.4.3</strong><br>
               <span>Verfügbare Version: <strong id="availableVersionLabel">–</strong></span><br>
               <span>Status: <strong id="versionStatusLabel">Wird geprüft …</strong></span></span>
             </div>
@@ -305,10 +315,44 @@
           </div>
         </div>
 
-        <div class="settings-content-indent">
-          <p class="settings-drag-hint">Artikel per Drag&amp;Drop verschieben oder die Pfeile benutzen.</p>
+        <div class="settings-articles-head">
+          <div>
+            <h2>Artikel</h2>
+            <p class="settings-drag-hint">Per Drag&amp;Drop verschieben oder die Pfeile benutzen.</p>
+          </div>
+          <button id="addProductBtn" class="primary-btn" type="button">+ Artikel hinzufügen</button>
         </div>
         <div id="settingsList" class="settings-list"></div>
+
+        <div class="backup-box preset-picker-box">
+          <div class="preset-picker-copy">
+            <h3>Artikel-Preset auswählen</h3>
+          </div>
+          <div class="preset-picker-controls">
+            <label for="presetSelect">Preset</label>
+            <div class="preset-select-row">
+              <select id="presetSelect" disabled>
+                <option value="">Presets werden geladen …</option>
+              </select>
+              <button id="clearPresetSelectionBtn" class="secondary-btn preset-clear-btn" type="button" disabled title="Preset-Auswahl löschen">Löschen</button>
+            </div>
+            <button id="loadPresetBtn" class="primary-btn preset-load-btn" type="button" disabled>Preset laden</button>
+            <span id="presetStatus" class="preset-status" role="status">Preset-Liste wird geladen …</span>
+          </div>
+        </div>
+
+        <div class="backup-box preset-export-box">
+          <div class="preset-export-copy">
+            <h3>Artikel-Preset erstellen</h3>
+            <p>Aktuelle Artikelliste als Preset speichern.</p>
+          </div>
+          <div class="preset-export-controls">
+            <label class="sr-only" for="presetNameInput">Preset-Name</label>
+            <input id="presetNameInput" type="text" maxlength="80" autocomplete="off" placeholder="Preset-Name" />
+            <button id="exportProductPresetBtn" class="primary-btn" type="button" disabled>Preset speichern</button>
+            <span class="preset-export-hint">Preset-Datei und index.json werden zusammen heruntergeladen.</span>
+          </div>
+        </div>
 
         <div class="backup-box">
           <div>
@@ -392,7 +436,7 @@
   </div>
   <button id="globalUpdateBtn" class="primary-btn" type="button">Aktualisieren</button>
 </div>
-<script src="app.js?v=0.22.4.1"></script>
+<script src="app.js?v=0.24.4.3"></script>
 <script>
   (() => {
     const CURRENT_VERSION = document.documentElement.dataset.appVersion || "V0.22.4.1";
