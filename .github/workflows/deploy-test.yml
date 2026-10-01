@@ -17,9 +17,17 @@ jobs:
         run: |
           git clone https://x-access-token:${{ secrets.TEST_REPO_TOKEN }}@github.com/${{ github.repository_owner }}/kassenapp-test.git /tmp/kassenapp-test
 
+      - name: Clean test repository
+        run: |
+          find /tmp/kassenapp-test \
+            -mindepth 1 \
+            -maxdepth 1 \
+            ! -name ".git" \
+            -exec rm -rf {} +
+
       - name: Copy app files
         run: |
-          rsync -av --delete \
+          rsync -av \
             --exclude ".git" \
             --exclude ".github" \
             ./ /tmp/kassenapp-test/
@@ -37,6 +45,6 @@ jobs:
             echo "No changes to deploy"
             exit 0
           fi
-          
+
           git commit -m "Deploy develop ${GITHUB_SHA}"
           git push origin main
