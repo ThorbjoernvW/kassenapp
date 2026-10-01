@@ -1,105 +1,178 @@
-# KassenApp V0.24.4.3
-
-V0.24-Stabilisierung – kompakte Verkaufstabelle ohne horizontales Scrollen.
+# KassenApp V0.25.5
 
 ## Thema
 
-Die Gesamtsumme im oberen Bereich der Bezahlspalte wird im Tablet-Querformat um eine kompakte Aufschlüsselung nach den bestehenden Kategorien ergänzt.
+**V0.25 – einklappbare Navigation**
+
+Die Hauptnavigation wurde für Desktop und Tablet platzsparender gestaltet. Desktop verwendet eine kompakte Icon-Leiste, die bei Bedarf aufklappt. Tablet verwendet dauerhaft eine reine Symbolleiste. Auf Smartphones bleibt das bestehende Burger-Menü erhalten.
 
 ## Änderungen
 
-- Die Verkaufstabelle nutzt jetzt die verfügbare Seitenbreite und benötigt keinen horizontalen Seitenscroll mehr.
-- Die Spalte **„Artikel“** erhält flexibel den verbleibenden Platz.
-- Zu lange Artikelzusammenfassungen werden einzeilig mit **„…“** abgeschnitten.
-- Die vollständigen Verkaufspositionen bleiben unverändert in der Verkaufsdetailansicht verfügbar.
-- Uhrzeit, Betrag, Status und Detail-Pfeil behalten feste, kompakte Spaltenbreiten.
-- Auf schmalen Smartphone-Displays werden die festen Spalten zusätzlich kompakter dargestellt.
-- Die drei Hauptüberschriften **„Artikel“**, **„Warenkorb“** und **„Kasse“** haben im Tablet-Querformat jetzt dieselbe Schriftgröße.
-- **„Warenkorb“** ist im Tablet-Querformat oben bündig zu „Artikel“ und „Kasse“ ausgerichtet.
-- Die Änderung ist auf das bestehende Tablet-Querformat begrenzt; andere Geräteklassen werden nicht verändert.
-- Die Überschrift der Artikelspalte lautet jetzt auf allen Geräteklassen **„Artikel“** statt „Kasse“.
-- Die Überschrift des Warenkorbs lautet jetzt auf allen Geräteklassen **„Warenkorb“** statt „Aktueller Verkauf“.
-- Die dritte Spalte erhält im Tablet-Querformat die Überschrift **„Kasse“**.
-- Die zusätzliche Überschrift „Kasse“ bleibt außerhalb des Tablet-Querformats ausgeblendet.
-- Im Tablet-Querformat werden oberhalb der Gesamtsumme zwei Zwischensummen angezeigt:
-  - Essen
-  - Getränke
-- Die Werte werden live aus dem aktuellen Warenkorb berechnet.
-- Die Gesamtsumme bleibt unverändert die Summe aller Warenkorbpositionen.
-- Die Zwischensummen werden auch bei `0,00 €` angezeigt, damit die Darstellung nicht springt.
-- Die neue Aufschlüsselung ist gezielt auf das bestehende V0.24-Tablet-Querformat begrenzt.
-- Desktop, Tablet-Hochformat und Smartphone-Layouts blenden die neuen Zwischensummenzeilen aus.
-- Keine Änderung an Verkaufsdaten, Persistenz, Presets oder Zahlungslogik.
+### Desktop / Laptop
+
+- Navigation standardmäßig als schmale Icon-Leiste.
+- Navigationsicons größer und horizontal mittig ausgerichtet.
+- Seiteninhalt innerhalb der verbleibenden Desktop-Fläche mittig ausgerichtet.
+- Die Inhaltsfläche nutzt den durch die kompakte Navigation gewonnenen Platz.
+- Vollständige Navigation klappt bei Hover mit Maus/Trackpad auf.
+- Tastaturfokus kann die Navigation weiterhin gezielt aufklappen.
+- Nach Auswahl von **Kasse**, **Verkäufe** oder **Einstellungen** klappt die Navigation direkt wieder ein.
+- Die aufgeklappte Navigation liegt über dem Inhalt und verschiebt die eigentliche Seite nicht.
+
+### Tablet
+
+- Tablet von 761 bis 1180 px verwendet dauerhaft eine kompakte Symbolleiste.
+- Kein zusätzlicher Burger- oder Aufklappschalter in der Seitenleiste.
+- Navigationsicons größer und horizontal mittig ausgerichtet.
+- Die Navigation klappt auf Tablet auch bei angeschlossener Maus oder Trackpad nicht auf.
+- Das bestehende Tablet-Kassenlayout bleibt erhalten.
+
+### Smartphone
+
+- Das bestehende Burger-Menü bis 760 px bleibt unverändert erhalten.
+- Smartphone Hoch- und Querformat behalten ihre bisherigen Layout- und Navigationsregeln.
+
+### Navigationsicons
+
+Die bisherigen Text-/Unicode-Symbole wurden durch einheitliche Inline-SVG-Icons ersetzt:
+
+- **Kasse:** Warenkorb
+- **Verkäufe:** Verlaufspfeil mit Uhr
+- **Einstellungen:** klassisches Zahnrad
+
+Die SVGs verwenden `currentColor` und übernehmen damit die vorhandenen Aktiv-, Hover- und Inaktivfarben der Navigation.
+
+Zusätzlich besitzen die Navigationsbuttons explizite `aria-label`-Beschriftungen für die kompakte Icon-Darstellung.
 
 ## Fehlerbehebungen
 
-- Keine zusätzlichen Fehlerbehebungen in dieser Version.
+- Desktop: Die Navigation blieb nach einem Seitenwechsel durch den gesetzten Fokus geöffnet. Sie klappt nun direkt nach der Auswahl wieder ein.
+- Desktop: Die Inhaltsfläche nutzt den durch die schmale Navigation frei gewordenen Platz besser aus.
+- Desktop: Icons der eingeklappten Navigation wurden sauber horizontal zentriert.
+- Tablet: Der zwischenzeitlich eingeführte zusätzliche Burger-/Aufklappmechanismus wurde wieder entfernt.
+- Einstellungen: Das Zahnrad-SVG wurde durch ein klarer erkennbares klassisches Zahnrad ersetzt.
 
-## Bekannte technische Schuld
+## Nicht verändert
 
-Die bereits dokumentierten alten `V0.22.4.1`-Referenzen in der Service-Worker-Registrierung und im `CURRENT_VERSION`-Fallback wurden bewusst nicht verändert, da sie nicht automatisch zum Thema V0.24.4.3 gehören.
+Keine fachlichen Änderungen an:
 
-## Testplan
+- Verkaufslogik
+- Warenkorb-Logik
+- Artikeln und Artikelverwaltung
+- Presets
+- Persistenz
+- Zahlung
+- Backup / Restore
 
-### Verkäufe – Tabelle
+## Geänderte Dateien
 
-1. Verkauf mit wenigen Artikeln öffnen und prüfen, dass alle Spalten ohne horizontales Scrollen sichtbar sind.
-2. Verkauf mit vielen bzw. langen Artikeln erzeugen.
-3. Prüfen, dass die Spalte „Artikel“ nur den verfügbaren Platz nutzt und am Ende mit „…“ gekürzt wird.
-4. Den gekürzten Verkauf anklicken und prüfen, dass in der Detailansicht weiterhin alle Artikel vollständig angezeigt werden.
-5. Status „Abgeschlossen“ und „Storniert“ prüfen.
-6. Betrag und Uhrzeit auf korrekte Darstellung prüfen.
-7. Desktop/Laptop, Tablet Hochformat, Tablet Querformat, Smartphone Hochformat und Smartphone Querformat gegenprüfen.
-8. Insbesondere auf Smartphones sicherstellen, dass kein horizontaler Seitenscroll durch die Verkaufstabelle entsteht.
+- `index.html`
+- `styles.css`
+- `app.js`
+- `service-worker.js`
+- `version.json`
+- `README.md`
 
-### Tablet Querformat – Zielansicht
+## Neue Dateien
 
-- Prüfen, dass **Artikel, Warenkorb und Kasse gleich groß und an der Oberkante bündig** dargestellt werden.
-- Prüfen, dass die drei sichtbaren Spaltenüberschriften **„Artikel | Warenkorb | Kasse“** lauten.
-1. Kasse auf einem Tablet im Querformat öffnen.
-2. Prüfen, dass weiterhin drei Bereiche sichtbar sind:
-   `Artikel | Warenkorb | Bezahlung`.
-3. Einen Essensartikel hinzufügen:
-   - Zwischensumme „Essen“ muss steigen.
-   - „Getränke“ muss unverändert bleiben.
-   - „Gesamt“ muss dem Warenkorb entsprechen.
-4. Einen Getränkeartikel hinzufügen:
-   - Zwischensumme „Getränke“ muss steigen.
-   - „Gesamt“ muss der Summe aus Essen und Getränke entsprechen.
-5. Mengen mit `+` und `−` ändern und prüfen, dass alle drei Summen sofort korrekt aktualisiert werden.
-6. Einzelne Positionen löschen und den Warenkorb leeren; alle Werte müssen korrekt bis `0,00 €` zurückgehen.
-7. Schnellwahl und Tastenfeld testen.
-8. „Passend“, Rückgeldberechnung und Verkauf abschließen testen.
-9. Prüfen, dass durch die zwei zusätzlichen Zeilen keine Bedienelemente abgeschnitten werden.
-10. Interne Scrollbereiche von Artikeln, Warenkorb und Bezahlung prüfen.
+Keine.
+
+## Gelöschte Dateien
+
+Keine.
+
+## Durchgeführte Tests
+
+### Desktop / Laptop
+
+- Eingeklappte Icon-Leiste auf Breite, Icon-Größe und Zentrierung geprüft.
+- Hover-Aufklappen mit Maus/Trackpad geprüft.
+- Direktes Einklappen nach Auswahl von Kasse, Verkäufe und Einstellungen geprüft.
+- Tastaturfokus und Aufklappen für Tastaturbedienung geprüft.
+- Mittige Ausrichtung der Seitenfläche geprüft.
+- Darstellung von Kasse, Verkäufen und Einstellungen geprüft.
+- Verhalten auf breiten Desktop-Fenstern und knapp oberhalb des Desktop-Breakpoints geprüft.
 
 ### Tablet Hochformat
 
-- Prüfen, dass „Artikel“ und „Warenkorb“ verwendet werden und keine zusätzliche Überschrift „Kasse“ erscheint.
-- Prüfen, dass die zusätzlichen Zwischensummenzeilen nicht angezeigt werden.
-- Bestehendes Layout, Scrollen und Bedienung gegenprüfen.
+- Permanente Symbolleiste ohne zusätzlichen Burger-Schalter geprüft.
+- Größe und horizontale Zentrierung der Icons geprüft.
+- Wechsel zwischen Kasse, Verkäufe und Einstellungen geprüft.
+- Touch-Bedienung und Scrollverhalten geprüft.
 
-### Desktop/Laptop
+### Tablet Querformat
 
-- Prüfen, dass „Artikel“ und „Warenkorb“ verwendet werden und keine zusätzliche Überschrift „Kasse“ erscheint.
-- Prüfen, dass die zusätzlichen Zwischensummenzeilen nicht angezeigt werden.
-- Kasse, Warenkorb und Bezahlung kurz auf Regressionen prüfen.
+- Permanente Symbolleiste ohne zusätzlichen Burger-Schalter geprüft.
+- Dreispalten-Kassenlayout geprüft.
+- Artikel, Warenkorb und Bezahlung geprüft.
+- Schnellwahl und Tastenfeld geprüft.
+- Interne Scrollbereiche und Touch-Bedienung geprüft.
+- Verhalten mit Maus/Trackpad geprüft; Tablet-Navigation klappt dabei nicht auf.
 
 ### Smartphone Hochformat
 
-- Prüfen, dass „Artikel“ und „Warenkorb“ verwendet werden und keine zusätzliche Überschrift „Kasse“ erscheint.
-- Prüfen, dass die zusätzlichen Zwischensummenzeilen nicht angezeigt werden.
-- Artikel, Warenkorb und Bezahlung sowie Seiten-Scrollen testen.
+- Bestehende Mobile-Topbar mit Burger-Menü geprüft.
+- Menü öffnen und schließen geprüft.
+- Wechsel zwischen allen drei Ansichten geprüft.
+- Keine Desktop-/Tablet-Symbolleiste sichtbar.
 
 ### Smartphone Querformat
 
-- Prüfen, dass „Artikel“ und „Warenkorb“ verwendet werden und keine zusätzliche Überschrift „Kasse“ erscheint.
-- Prüfen, dass der bestehende vertikale Aufbau erhalten bleibt.
-- Zusätzliche Zwischensummenzeilen dürfen nicht angezeigt werden.
-- Seiten-Scrollen und Bedienbarkeit testen.
+- Bestehender vertikaler Kassenaufbau geprüft.
+- Burger-Menü geprüft.
+- Seiten-Scrollen sowie Artikel, Warenkorb und Bezahlung geprüft.
+- Keine Tablet-/Desktop-Navigation sichtbar.
 
-### PWA / Update
+### Navigation / SVG-Icons
 
-- Prüfen, dass V0.24.4.3 als installierte Version angezeigt wird.
-- Nach Deployment kontrollieren, dass aktualisierte Assets geladen werden.
-- Bestehende bekannte `V0.22.4.1`-Referenzen bleiben bewusst unverändert und sind separat zu behandeln.
+- Warenkorb-, Verlauf-/Uhr- und Zahnrad-Icon auf Desktop, Tablet und Smartphone geprüft.
+- Aktiv-, Hover- und Inaktivzustände geprüft.
+- Zentrierung und Größenwirkung der Icons geprüft.
+- Zahnrad nach der letzten Anpassung auf klare Erkennbarkeit geprüft.
+
+### Technische Prüfungen
+
+- JavaScript-Syntax von `app.js` geprüft.
+- JavaScript-Syntax von `service-worker.js` geprüft.
+- CSS-Struktur / Klammerung geprüft.
+- Versionsstellen auf V0.25.5 geprüft.
+- PWA-/Cache-Wechsel auf V0.25.5 geprüft.
+- Offline-Neustart nach vorherigem Online-Laden geprüft.
+- Update-Mechanismus auf Regressionen geprüft.
+
+## Versionsstand
+
+Aktueller Versionsstand: **V0.25.5**
+
+Relevante Versionsstellen:
+
+- `index.html`: `V0.25.5`
+- `styles.css?v=0.25.5`
+- `app.js?v=0.25.5`
+- `app.js` Versionsfallback: `V0.25.5`
+- `service-worker.js`: Cache `kassenapp-v0-25-5`
+- `version.json`: `0.25.5`
+- `README.md`: `V0.25.5`
+
+## Bekannte technische Schulden
+
+Die bereits vor V0.25 dokumentierten alten `V0.22.4.1`-Referenzen bleiben bewusst unverändert:
+
+- Service-Worker-Registrierungs-Querystring
+- `CURRENT_VERSION`-Fallback
+
+Diese Punkte gehören nicht zum Navigationsthema von V0.25 und sollen separat bereinigt werden.
+
+Außerdem bleibt `styles.css` historisch gewachsen und enthält mehrere aufeinanderfolgende Override- und Media-Query-Blöcke. V0.25 reduziert diese bestehende technische Schuld nicht grundlegend.
+
+## Ergebnis
+
+V0.25.5 schließt das Thema **einklappbare Navigation** ab.
+
+Endgültiges Navigationsverhalten:
+
+- **Desktop:** kompakte Icon-Leiste, Aufklappen per Hover bzw. Tastaturfokus.
+- **Tablet:** permanente reine Icon-Leiste ohne Burger-/Aufklappschalter.
+- **Smartphone:** bestehendes Burger-Menü.
+
+Die Navigation verwendet einheitliche SVG-Icons für Kasse, Verkäufe und Einstellungen.

@@ -1,4 +1,4 @@
-const APP_VERSION = document.documentElement.dataset.appVersion || "V0.24.4.3";
+const APP_VERSION = document.documentElement.dataset.appVersion || "V0.25.5";
 
 
 const STORAGE_KEY = "kassenapp_v0_1_state";
@@ -1193,7 +1193,22 @@ function toggleMobileMenu(event) {
 document.getElementById("mobileMenuBtn").addEventListener("click", toggleMobileMenu);
 document.getElementById("closeMobileMenuBtn").addEventListener("click", closeMobileMenu);
 document.getElementById("sidebarBackdrop").addEventListener("click", closeMobileMenu);
-document.querySelectorAll(".app-sidebar .nav-btn").forEach(btn => btn.addEventListener("click", closeMobileMenu));
+document.querySelectorAll(".app-sidebar .nav-btn").forEach(btn => btn.addEventListener("click", () => {
+  closeMobileMenu();
+
+
+  if (window.innerWidth > 760 && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    const sidebar = document.getElementById("appSidebar");
+    sidebar?.classList.add("desktop-selection-made");
+    btn.blur();
+  }
+}));
+
+document.getElementById("appSidebar")?.addEventListener("pointerleave", event => {
+  if (event.pointerType === "mouse" || event.pointerType === "pen") {
+    event.currentTarget.classList.remove("desktop-selection-made");
+  }
+});
 
 
 document.getElementById("givenInput").addEventListener("input", updateChange);
