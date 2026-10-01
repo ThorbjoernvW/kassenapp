@@ -37,6 +37,6 @@ jobs:
             echo "No changes to deploy"
             exit 0
           fi
-
+          
           git commit -m "Deploy develop ${GITHUB_SHA}"
           git push origin main
