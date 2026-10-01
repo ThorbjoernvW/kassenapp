@@ -22,7 +22,6 @@ jobs:
           find /tmp/kassenapp-test \
             -mindepth 1 \
             -maxdepth 1 \
-            ! -name ".git" \
             -exec rm -rf {} +
 
       - name: Copy app files
